@@ -111,7 +111,7 @@ def get_employee_pay(month_start):
 
 def get_boat_profits(month_start):
         # Gets bid, flat cost, daily price, and num of days reserved
-        boats_tuple = connection.execute("SELECT b.bid, b.flat_cost, b.daily_price, (r.day_ret - r.day_res) FROM boats b, reserves r WHERE r.bid = b.bid AND MONTH(r.day_res) = %s ORDER BY b.bid" % (month_start)).fetchall()
+        boats_tuple = connection.execute("SELECT b.bid, b.flat_cost, b.daily_price, (r.day_ret - r.day_res + 1) FROM boats b, reserves r WHERE r.bid = b.bid AND MONTH(r.day_res) = %s ORDER BY b.bid" % (month_start)).fetchall()
 
         # Get profit from each boat
         profit = 0
@@ -143,10 +143,10 @@ def test_get_employee_pay():
         assert get_employee_pay(test_month) == 2996
 
 def test_get_boat_profits():
-        assert get_boat_profits(test_month) == 3410
+        assert get_boat_profits(test_month) == 4060
 
 def test_get_monthly_profit():
-        assert get_monthly_profit(test_month) == 414
+        assert get_monthly_profit(test_month) == 1064
 
 
 
