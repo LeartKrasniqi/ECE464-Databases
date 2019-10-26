@@ -1,0 +1,55 @@
+Assignment 1, Problem 3
+Implementation of Monthly Payment System
+
+
+The dataset from Part 1 was expanded to include an Employee table and a Weekly Hours table.  The schema for these two is shown below:
+
+mysql> describe employees;
++-------+-------------+------+-----+---------+----------------+
+| Field | Type        | Null | Key | Default | Extra          |
++-------+-------------+------+-----+---------+----------------+
+| eid   | int(11)     | NO   | PRI | NULL    | auto_increment |
+| ename | varchar(30) | YES  |     | NULL    |                |
+| wage  | int(11)     | YES  |     | NULL    |                |
++-------+-------------+------+-----+---------+----------------+ 
+
+mysql> describe weekly_hours;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| week  | date    | NO   | PRI | NULL    |       |
+| eid   | int(11) | NO   | PRI | NULL    |       |
+| hours | int(11) | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+
+
+These two tables allow us to determine the monthly payment for each of the employees.  The week field is of type Date, meaning that it can be queried by month (using the MONTH() function in MySQL).  Therefore, it is possible to calculate the weekly pay for each employee, and then sum those pays for the entire month.
+
+In order to incorporate the revenue made for each of the boats, the Boats and Reserves tables were modified as follows:
+
+mysql> describe boats;
++-------------+-------------+------+-----+---------+----------------+
+| Field       | Type        | Null | Key | Default | Extra          |
++-------------+-------------+------+-----+---------+----------------+
+| bid         | int(11)     | NO   | PRI | NULL    | auto_increment |
+| bname       | varchar(20) | YES  |     | NULL    |                |
+| color       | varchar(10) | YES  |     | NULL    |                |
+| length      | int(11)     | YES  |     | NULL    |                |
+| flat_cost   | int(11)     | YES  |     | NULL    |                |
+| daily_price | int(11)     | YES  |     | NULL    |                |
++-------------+-------------+------+-----+---------+----------------+
+
+mysql> describe reserves;
++---------+---------+------+-----+---------+-------+
+| Field   | Type    | Null | Key | Default | Extra |
++---------+---------+------+-----+---------+-------+
+| sid     | int(11) | NO   | PRI | NULL    |       |
+| bid     | int(11) | NO   | PRI | NULL    |       |
+| day_res | date    | NO   | PRI | NULL    |       |
+| day_ret | date    | NO   | PRI | NULL    |       |
++---------+---------+------+-----+---------+-------+
+
+
+The flat_cost field in the boats refers to the fixed cost of each boat when a reservation is made (e.g. fuel, basic maintenance, cleaning, etc.).  The daily_price refers to the price the sailors pay to rent the boat per day.  Additionally, the reserves table was modified to include the day the boat is scheduled to be returned.  Together, these fields allow for the revenue from each boat to be calculated, once again using queries that involved the MONTH() function in MySQL.
+
+In order to test the implementation, a few employees were created and a test month of 11 (i.e. November) was used.  We added a variety of reservations in the month of November and the weekly hours for each of the employees.  We performed the calculations by hand and then asserted them against the results obtained from our implementation.  Pytest was used to conduct the tests in code.

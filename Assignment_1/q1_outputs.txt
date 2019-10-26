@@ -1,0 +1,176 @@
+mysql> source queries.sql;
+
+/* Q1: Select, for each boat, the sailor who made the highest number of reservations for that boat */
+--------------
+SELECT temp.bid, temp.sid, MAX(count_res)
+FROM ( SELECT R.bid as bid, R.sid as sid, COUNT(R.bid) as count_res
+	   FROM reserves R, sailors S
+	   WHERE R.sid = S.sid
+	   GROUP BY R.bid, R.sid
+	   ORDER BY count_res DESC
+	 ) as temp
+GROUP BY temp.bid
+ORDER BY temp.bid
+--------------
+
++-----+-----+----------------+
+| bid | sid | MAX(count_res) |
++-----+-----+----------------+
+| 101 |  22 |              1 |
+| 102 |  31 |              1 |
+| 103 |  74 |              1 |
+| 104 |  24 |              1 |
+| 105 |  23 |              1 |
+| 106 |  60 |              2 |
+| 107 |  88 |              1 |
+| 108 |  89 |              1 |
+| 109 |  59 |              1 |
+| 110 |  88 |              2 |
+| 111 |  88 |              1 |
+| 112 |  61 |              1 |
++-----+-----+----------------+
+12 rows in set (0.00 sec)
+
+
+
+
+/* Q2: List, for every boat, the number of times it has been reserved, excluding those boats that have never been reserved (list the id and the name) */
+--------------
+SELECT B.bid, B.bname, COUNT(*) as Num_Res
+FROM Boats B, Reserves R
+WHERE B.bid = R.bid
+GROUP BY B.bid
+HAVING Num_Res > 0
+--------------
+
++-----+-----------+---------+
+| bid | bname     | Num_Res |
++-----+-----------+---------+
+| 101 | Interlake |       2 |
+| 102 | Interlake |       3 |
+| 103 | Clipper   |       3 |
+| 104 | Clipper   |       5 |
+| 105 | Marine    |       3 |
+| 106 | Marine    |       3 |
+| 109 | Driftwood |       4 |
+| 112 | Sooney    |       1 |
+| 110 | Klapser   |       3 |
+| 107 | Marine    |       1 |
+| 111 | Sooney    |       1 |
+| 108 | Driftwood |       1 |
++-----+-----------+---------+
+12 rows in set (0.00 sec)
+
+
+
+
+/* Q3: List those sailors who have reserved every red boat (list the id and the name) */
+--------------
+SELECT S.sid, S.sname
+FROM sailors S, boats B
+WHERE NOT EXISTS ( SELECT B.bid
+		   FROM boats B
+		   WHERE NOT EXISTS ( SELECT R.bid
+				      FROM reserves R
+				       WHERE R.bid = B.bid AND R.sid = S.sid and B.color = 'red'
+				    )
+		 )
+--------------
+
+Empty set (0.00 sec)
+
+
+
+
+/* Q4: List those sailors who have reserved only red boats */
+--------------
+SELECT DISTINCT S.sid, S.sname
+FROM sailors S, reserves R, boats B
+WHERE S.sid = R.sid AND R.bid = B.bid AND B.color = 'red' AND S.sid NOT IN ( SELECT S.sid
+									     FROM sailors S, reserves R, boats B
+									     WHERE S.sid = R.sid AND R.bid = B.bid AND B.color != 'red'
+									   )
+--------------
+
++-----+----------+
+| sid | sname    |
++-----+----------+
+|  23 | emilio   |
+|  24 | scruntus |
+|  35 | figaro   |
+|  61 | ossola   |
+|  62 | shaun    |
++-----+----------+
+5 rows in set (0.00 sec)
+
+
+
+
+/* Q5: For which boat are there the most reservations? */
+--------------
+SELECT B.bid, B.bname, COUNT(*) as Num_Res
+FROM boats B, reserves R
+WHERE B.bid = R.bid
+GROUP BY B.bid
+ORDER BY Num_Res DESC
+LIMIT 1
+--------------
+
++-----+---------+---------+
+| bid | bname   | Num_Res |
++-----+---------+---------+
+| 104 | Clipper |       5 |
++-----+---------+---------+
+1 row in set (0.00 sec)
+
+
+
+
+/* Q6: Select all sailors who have never reserved a red boat -- need to union with those who never reserve any boat */
+--------------
+SELECT DISTINCT S.sid as sid, S.sname
+FROM sailors S, reserves R, boats B
+WHERE S.sid = R.sid AND R.bid = B.bid AND B.color != 'red' AND S.sid NOT IN ( SELECT S.sid
+                                                                              FROM sailors S, reserves R, boats B
+                                                                              WHERE S.sid = R.sid AND R.bid = B.bid AND B.color = 'red'
+                                                                            )
+UNION 
+SELECT DISTINCT S.sid as sid, S.sname
+FROM sailors S, reserves R
+WHERE S.sid NOT IN ( SELECT R.sid FROM reserves R)
+ORDER BY sid
+--------------
+
++-----+---------+
+| sid | sname   |
++-----+---------+
+|  29 | brutus  |
+|  32 | andy    |
+|  58 | rusty   |
+|  60 | jit     |
+|  71 | zorba   |
+|  74 | horatio |
+|  85 | art     |
+|  90 | vin     |
+|  95 | bob     |
++-----+---------+
+9 rows in set (0.00 sec)
+
+
+
+
+/* Q7: Find the average age of sailors with a rating of 10 */
+--------------
+SELECT AVG(S.age)
+FROM sailors S
+WHERE S.rating = 10
+--------------
+
++------------+
+| AVG(S.age) |
++------------+
+|    35.0000 |
++------------+
+1 row in set (0.00 sec)
+
+mysql> 
